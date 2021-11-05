@@ -24,10 +24,26 @@ class HyperspectralVideoData:
                 im = torch.from_numpy(((im.astype(np.float32) / 255.0) - 0.5) / 0.5)
                 data[ti,...,ci] = im
         self.data = data
+        self.time = time
+        self.channels = channels
         
-        sidelength = (time, height, width)
+        sidelength = (self.time, height, width)
         mgrid = get_mgrid(sidelength, dim=3)
         self.mgrid = mgrid
+        self.pixels = self.mgrid.view(-1, 3).shape[0]
+        assert self.pixels == self.data.view(-1, self.channels).shape[0]
         
-        print(f"Data:{self.data.shape}, Type:{self.data.dtype}, Range:{(self.data.min(), self.data.max())}")
         print(f"Coords:{self.mgrid.shape}, Type:{self.mgrid.dtype}, Range:{(self.mgrid.min(), self.mgrid.max())}")
+        print(f"Data:{self.data.shape}, Type:{self.data.dtype}, Range:{(self.data.min(), self.data.max())}")
+        
+    def get_pixels(self, batch_size):
+        ix = np.random.choice(self.pixels, batch_size)
+        batch_coord = self.mgrid.view(-1, 3)[ix]
+        batch_data = self.data.view(-1, self.channels)[ix]
+        return batch_coord, batch_data
+
+    def get_images(self, batch_size):
+        ix = np.random.choice(self.time, batch_size)
+        batch_coord = self.mgrid[ix,...]
+        batch_data = self.data[ix,...]
+        return batch_coord, batch_data

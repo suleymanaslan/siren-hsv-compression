@@ -1,2 +1,2 @@
-# siren-lfv-compression
- Light Field Video Compression with SIREN
+# siren-hsv-compression
+ Hyperspectral Video Compression with SIREN

@@ -26,8 +26,8 @@ class FCBlockMulti(nn.Module):
         self.net = []
         self.net.append(nn.Sequential(nn.Linear(in_features, hidden_features), SineMulti()))
         for i in range(num_hidden_layers):
-            self.net.append(nn.Sequential(nn.Linear(hidden_features*2, hidden_features), SineMulti()))
-        self.net.append(nn.Sequential(nn.Linear(hidden_features*2, out_features)))
+            self.net.append(nn.Sequential(nn.Linear(hidden_features*6, hidden_features), SineMulti()))
+        self.net.append(nn.Sequential(nn.Linear(hidden_features*6, out_features)))
 
         self.net = nn.Sequential(*self.net)
         self.net.apply(sine_init)
@@ -60,8 +60,13 @@ class SineMulti(nn.Module):
         super().__init__()
 
     def forward(self, input):
-        return torch.cat((torch.sin(30 * input), 
-                          torch.cos(30 * input)), dim=-1)
+        return torch.cat((torch.sin(15 * input), 
+                          torch.cos(15 * input), 
+                          torch.sin(30 * input), 
+                          torch.cos(30 * input), 
+                          torch.sin(60 * input), 
+                          torch.cos(60 * input)
+                         ), dim=-1)
 
 class Siren(nn.Module):
     def __init__(self, in_features, out_features, hidden_features, num_hidden_layers):

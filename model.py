@@ -19,15 +19,15 @@ class FCBlock(nn.Module):
     def forward(self, inputs):
         return self.net(inputs)
 
-class FCBlockMulti(nn.Module):
+class FCBlockEncoding(nn.Module):
     def __init__(self, in_features, out_features, num_hidden_layers, hidden_features):
         super().__init__()
 
         self.net = []
-        self.net.append(nn.Sequential(nn.Linear(in_features, hidden_features), SineMulti()))
+        self.net.append(nn.Sequential(nn.Linear(in_features, hidden_features), SinusoidalEncoding()))
         for i in range(num_hidden_layers):
-            self.net.append(nn.Sequential(nn.Linear(hidden_features*6, hidden_features), SineMulti()))
-        self.net.append(nn.Sequential(nn.Linear(hidden_features*6, out_features)))
+            self.net.append(nn.Sequential(nn.Linear(hidden_features*12, hidden_features), SinusoidalEncoding()))
+        self.net.append(nn.Sequential(nn.Linear(hidden_features*12, out_features)))
 
         self.net = nn.Sequential(*self.net)
         self.net.apply(sine_init)
@@ -55,18 +55,12 @@ class Sine(nn.Module):
     def forward(self, input):
         return torch.sin(30 * input)
 
-class SineMulti(nn.Module):
+class SinusoidalEncoding(nn.Module):
     def __init(self):
         super().__init__()
 
     def forward(self, input):
-        return torch.cat((torch.sin(15 * input), 
-                          torch.cos(15 * input), 
-                          torch.sin(30 * input), 
-                          torch.cos(30 * input), 
-                          torch.sin(60 * input), 
-                          torch.cos(60 * input)
-                         ), dim=-1)
+        return torch.cat([torch.cat((torch.sin(2 ** i * input), torch.cos(2 ** i * input)), dim=-1) for i in range(6)], dim=-1)
 
 class Siren(nn.Module):
     def __init__(self, in_features, out_features, hidden_features, num_hidden_layers):
@@ -76,10 +70,10 @@ class Siren(nn.Module):
     def forward(self, inputs):
         return self.net(inputs)
 
-class SirenMulti(nn.Module):
+class SirenFeatureEncoding(nn.Module):
     def __init__(self, in_features, out_features, hidden_features, num_hidden_layers):
         super().__init__()
-        self.net = FCBlockMulti(in_features, out_features, num_hidden_layers, hidden_features)
+        self.net = FCBlockEncoding(in_features, out_features, num_hidden_layers, hidden_features)
 
     def forward(self, inputs):
         return self.net(inputs)

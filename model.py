@@ -54,7 +54,7 @@ class Sine(nn.Module):
 
     def forward(self, input):
         return torch.sin(30 * input)
-    
+
 class SineMulti(nn.Module):
     def __init(self):
         super().__init__()
@@ -83,3 +83,31 @@ class SirenMulti(nn.Module):
 
     def forward(self, inputs):
         return self.net(inputs)
+
+class Signet(Siren):
+    def __init__(self, in_features, out_features, hidden_features, num_hidden_layers, c, alpha, batch_coord):
+        super().__init__(in_features * c, out_features, hidden_features, num_hidden_layers)
+        self.c = c
+        self.alpha = alpha
+        self.in_features = in_features * self.c
+        self.gegenbauer_init = torch.ones(list(batch_coord.view(-1, batch_coord.shape[-1]).shape) + [self.c])
+        self.out_shape = list(batch_coord.shape)
+        self.out_shape[-1] = self.out_shape[-1] * self.c
+        
+    def update_gegenbauer_init(self, batch_coord):
+        self.gegenbauer_init = torch.ones(list(batch_coord.view(-1, batch_coord.shape[-1]).shape) + [self.c])
+        self.out_shape = list(batch_coord.shape)
+        self.out_shape[-1] = self.out_shape[-1] * self.c
+    
+    def input_transformation(self, in_coord):
+        in_coord = in_coord.view(-1, in_coord.shape[-1])
+        gegenbauer_polynomials = self.gegenbauer_init.clone().to(in_coord.device)
+        gegenbauer_polynomials[...,1] = 2*self.alpha*in_coord
+        for n in range(1, self.c-1):
+            gegenbauer_polynomials[...,n+1] = (1/n) * (2*in_coord*(n+self.alpha-1)*gegenbauer_polynomials[...,n] - (n+2*self.alpha-2)*gegenbauer_polynomials[...,n-1])
+        return gegenbauer_polynomials.view(self.out_shape)
+
+    def forward(self, inputs):
+        inputs = inputs.clamp(-1, 1)
+        inputs_transformed = self.input_transformation(inputs)
+        return self.net(inputs_transformed)

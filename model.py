@@ -60,7 +60,7 @@ class SinusoidalEncoding(nn.Module):
         super().__init__()
 
     def forward(self, input):
-        return torch.cat([torch.cat((torch.sin(2 ** i * input), torch.cos(2 ** i * input)), dim=-1) for i in range(6)], dim=-1)
+        return torch.cat([torch.cat((torch.sin(2 ** (i+1) * input), torch.cos(2 ** (i+1) * input)), dim=-1) for i in range(6)], dim=-1)
 
 class Siren(nn.Module):
     def __init__(self, in_features, out_features, hidden_features, num_hidden_layers):

@@ -20,14 +20,14 @@ class FCBlock(nn.Module):
         return self.net(inputs)
 
 class FCBlockEncoding(nn.Module):
-    def __init__(self, in_features, out_features, num_hidden_layers, hidden_features):
+    def __init__(self, in_features, out_features, num_hidden_layers, hidden_features, bases):
         super().__init__()
 
         self.net = []
-        self.net.append(nn.Sequential(nn.Linear(in_features, hidden_features), SinusoidalEncoding()))
+        self.net.append(nn.Sequential(nn.Linear(in_features, hidden_features), SinusoidalEncoding(bases)))
         for i in range(num_hidden_layers):
-            self.net.append(nn.Sequential(nn.Linear(hidden_features*12, hidden_features), SinusoidalEncoding()))
-        self.net.append(nn.Sequential(nn.Linear(hidden_features*12, out_features)))
+            self.net.append(nn.Sequential(nn.Linear(hidden_features*bases*2, hidden_features), SinusoidalEncoding(bases)))
+        self.net.append(nn.Sequential(nn.Linear(hidden_features*bases*2, out_features)))
 
         self.net = nn.Sequential(*self.net)
         self.net.apply(sine_init)
@@ -49,18 +49,19 @@ def first_layer_sine_init(m):
             m.weight.uniform_(-1 / num_input, 1 / num_input)
 
 class Sine(nn.Module):
-    def __init(self):
+    def __init__(self):
         super().__init__()
 
     def forward(self, input):
         return torch.sin(30 * input)
 
 class SinusoidalEncoding(nn.Module):
-    def __init(self):
+    def __init__(self, bases):
         super().__init__()
+        self.bases = bases
 
     def forward(self, input):
-        return torch.cat([torch.cat((torch.sin(2 ** (i+1) * input), torch.cos(2 ** (i+1) * input)), dim=-1) for i in range(6)], dim=-1)
+        return torch.cat([torch.cat((torch.sin(2 ** (i+2) * input), torch.cos(2 ** (i+2) * input)), dim=-1) for i in range(self.bases)], dim=-1)
 
 class Siren(nn.Module):
     def __init__(self, in_features, out_features, hidden_features, num_hidden_layers):
@@ -71,9 +72,9 @@ class Siren(nn.Module):
         return self.net(inputs)
 
 class SirenFeatureEncoding(nn.Module):
-    def __init__(self, in_features, out_features, hidden_features, num_hidden_layers):
+    def __init__(self, in_features, out_features, hidden_features, num_hidden_layers, bases):
         super().__init__()
-        self.net = FCBlockEncoding(in_features, out_features, num_hidden_layers, hidden_features)
+        self.net = FCBlockEncoding(in_features, out_features, num_hidden_layers, hidden_features, bases)
 
     def forward(self, inputs):
         return self.net(inputs)

@@ -59,7 +59,7 @@ class MultispectralLightField:
         self.data_folder = data_folder
         
     def load_data(self, scene):
-        self.data = torch.from_numpy(((np.load(f'{self.data_folder}/{scene}.npy').astype(np.float32) / (2**16 - 1)) - 0.5) / 0.5)
+        self.data = torch.from_numpy(((np.load(f'{self.data_folder}/{scene}.npy')[::3,::3,...].astype(np.float32) / (2**16 - 1)) - 0.5) / 0.5)
     
         sidelength = (self.data.shape[0], self.data.shape[1], self.data.shape[2], self.data.shape[3], self.data.shape[4])
         self.mgrid = get_mgrid(sidelength, dim=5)
@@ -76,8 +76,8 @@ class MultispectralLightField:
         return batch_coord, batch_data
     
     def get_images(self, batch_size):
-        yi = np.random.choice(9, batch_size)
-        xi = np.random.choice(9, batch_size)
+        yi = np.random.choice(3, batch_size)
+        xi = np.random.choice(3, batch_size)
         li = np.random.choice(13, batch_size)
         batch_coord = self.mgrid[yi,xi,...,li,0:5]
         batch_data = self.data[yi,xi,...,li]

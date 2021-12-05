@@ -1,3 +1,4 @@
+import math
 import torch
 import numpy as np
 import torch.nn as nn
@@ -62,7 +63,7 @@ class SinusoidalEncoding(nn.Module):
         self.power = power
 
     def forward(self, input):
-        return torch.cat([torch.cat((torch.sin(2 ** (i+self.power) * input), torch.cos(2 ** (i+self.power) * input)), dim=-1) for i in range(self.bases)], dim=-1)
+        return torch.cat([torch.cat((torch.sin(2 ** (i+self.power) * math.pi * input), torch.cos(2 ** (i+self.power) * math.pi * input)), dim=-1) for i in range(self.bases)], dim=-1)
 
 class Siren(nn.Module):
     def __init__(self, in_features, out_features, hidden_features, num_hidden_layers):

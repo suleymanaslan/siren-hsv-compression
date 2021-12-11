@@ -113,3 +113,13 @@ class Signet(Siren):
         inputs = inputs.clamp(-1, 1)
         inputs_transformed = self.input_transformation(inputs)
         return self.net(inputs_transformed)
+    
+class SignetFeatureEncoding(Signet):
+    def __init__(self, in_features, out_features, hidden_features, num_hidden_layers, c, alpha, batch_coord, bases, power):
+        super().__init__(in_features, out_features, hidden_features, num_hidden_layers, c, alpha, batch_coord)
+        self.net = FCBlockEncoding(in_features * c, out_features, num_hidden_layers, hidden_features, bases, power, False)
+    
+    def forward(self, inputs):
+        inputs = inputs.clamp(-1, 1)
+        inputs_transformed = self.input_transformation(inputs)
+        return self.net(inputs_transformed)
